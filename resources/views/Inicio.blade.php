@@ -125,36 +125,35 @@
                     </table>
                 </div>
                 <div class="col-3" >
-                    <table class="table" style="border-radius: 5px;box-shadow: 0px 0px 10px black;">
+                    <table class="table" id="tabla_carrito" style="border-radius: 5px;box-shadow: 0px 0px 10px black;">
                         <thead>
                             <tr>
-                                <th class="text-center" colspan="5"><h3>Carrito de compras</h3></th>
+                                <th class="text-center" colspan="3"><h3>Carrito de compras</h3></th>
                             </tr>
+                            <input type="number" id="cart" name="cart" value="{{$Cart}}" readonly style="display: none;">
                             <tr>
                                 <th class="text-center">Nombre</th>
-                                <th class="text-center">Precio</th>
                                 <th class="text-center">Cantidad</th>
                                 <th class="text-center">-</th>
                             </tr>
                         </thead>
                         <tbody>
+                            <tr id="carro_vacio">
+                                <td class="text-center" colspan="3">Seleccione sus productos para agregarlos a la compra...</td>
+                            </tr>                            
+                        </tbody>
+                        <tfoot>
                             <tr>
-                                <td class="text-center"> Camisa</td>
-                                <td class="text-center"> Camisa</td>
-                                <td class="text-center"> 20</td>
-                                <td>
-                                    <button type="button" class="btn btn-primary" onclick="Adicionar()">
-                                        <i class="fa fa-trash"></i>
-                                    </button>
+                                <td class="text-center" id="Checkout" colspan="3" style="display: none;">
+                                    <button type="button" class="btn-sm btn-primary" onclick="Checkout()">Checkout <i class="fa fa-cart-plus"></i></button>
                                 </td>
                             </tr>
                             <tr>
-                                <td class="text-center" colspan="5">Seleccione sus productos para agregarlos a la compra...</td>
+                                <tr id="carro_confirma" style="display: none;">
+                                <td class="text-center" colspan="3">Se ha confirmado su compra, Muchas gracias por preferirnos.</td>
                             </tr>
-                        </tbody>
-                        <tr>
-                            <td class="text-center" colspan="5"><button type="button" class="btn-sm btn-primary" onclick="">Checkout <i class="fa fa-cart-plus"></i></button></td>
-                        </tr>
+                            </tr>
+                        </tfoot>                  
                     </table>
                 </div>
             </div>
@@ -163,20 +162,59 @@
 </html>
 <script type="text/javascript">
     function Adicionar(id){
-        alert(id);
+        cart = $('#cart').val();
         $.ajax({
             type: 'POST',
             url: "{{route('AdicionarProducto')}}",
             data: {
                 '_token': "{{ csrf_token() }}",
                 'id': id,
+                'cart': cart,
             },
             success: function(data){
-                data = JSON.parse(data);                        
-                if(data == 'true'){
-                    $("#consultar").show();
+                data = JSON.parse(data);
+                if(data['respuesta'] == 'true'){
+                    $("#tabla_carrito tbody").append("<tr id='"+cart+"_"+id+"'><td class='text-center'>"+data['nombre']+"</td><td class='text-center' id='cantidad_"+id+"'> 1</td><td> <button type='button' class='btn btn-primary' onclick='Eliminar("+cart+","+id+")'><i class='fa fa-trash'></i></button></td></tr>");
+                    $('#carro_vacio').hide();
+                    $('#Checkout').show();
                 }else{
-                    $("#consultar").hide();
+                    $("#cantidad_"+id).text(data['cantidad']);
+                }
+            }
+        });
+    }
+    function Eliminar(cart,id){
+        $.ajax({
+            type: 'POST',
+            url: "{{route('EliminarProducto')}}",
+            data: {
+                '_token': "{{ csrf_token() }}",
+                'id': id,
+                'cart': cart,
+            },
+            success: function(data){
+                data = JSON.parse(data);
+                if(data == 'true'){
+                    $("#"+cart+"_"+id).hide();
+                }
+            }
+        });
+    }
+    function Checkout(){
+        cart = $('#cart').val();
+        $.ajax({
+            type: 'POST',
+            url: "{{route('ConfirmarCompra')}}",
+            data: {
+                '_token': "{{ csrf_token() }}",
+                'cart': cart,
+            },
+            success: function(data){
+                data = JSON.parse(data);
+                if(data == 'true'){
+                    $("#carro_confirma").show();
+                    $("#tabla_carrito tbody").empty();
+                    $("#Checkout").hide();
                 }
             }
         });
