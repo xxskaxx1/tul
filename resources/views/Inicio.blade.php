@@ -78,7 +78,7 @@
     </head>
     <body>
         <header>
-            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
                 <a class="navbar-brand" href="#">
                     Tienda TUL
                 </a>
@@ -97,7 +97,7 @@
         </header><br>
         @if(isset($objProductos))
             <div class="row">
-                <div class="col-9 flex-center">
+                <div class="col-8 flex-center">
                     <table class="table">
                         <thead>
                             <tr>
@@ -195,7 +195,7 @@
             success: function(data){
                 data = JSON.parse(data);
                 if(data == 'true'){
-                    $("#"+cart+"_"+id).hide();
+                    $("#"+cart+"_"+id).remove();
                 }
             }
         });
